@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
+from app.limiter import limiter
 from app.routers import checkin, checkout, occupancy
 
 app = FastAPI(
@@ -8,8 +11,9 @@ app = FastAPI(
     description="Device-based check-in / check-out tracking for gym occupancy.",
 )
 
-# Allow all origins during development.
-# Restrict to your frontend domain in production.
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

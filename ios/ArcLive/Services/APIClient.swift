@@ -28,7 +28,7 @@ final class APIClient {
     /// Change this to your deployed server URL before shipping.
     /// During local development, use http://localhost:8000
     private let baseURL: URL = {
-        let raw = ProcessInfo.processInfo.environment["arclive-production.up.railway.app"] ?? "http://localhost:8000"
+        let raw = ProcessInfo.processInfo.environment["API_BASE_URL"] ?? "https://arclive-production.up.railway.app"
         return URL(string: raw)!
     }()
 
