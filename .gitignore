@@ -1,0 +1,19 @@
+# Environment / secrets
+.env
+**/.env
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+
+# Xcode / iOS
+ios/**/*.xcodeproj/xcuserdata/
+ios/**/DerivedData/
+ios/**/*.ipa
+ios/**/*.dSYM.zip
+*.xcworkspace/xcuserdata/
+.DS_Store
