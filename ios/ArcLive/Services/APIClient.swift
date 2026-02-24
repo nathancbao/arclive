@@ -25,8 +25,6 @@ enum APIError: LocalizedError {
 final class APIClient {
     static let shared = APIClient()
 
-    /// Change this to your deployed server URL before shipping.
-    /// During local development, use http://localhost:8000
     private let baseURL: URL = {
         let raw = ProcessInfo.processInfo.environment["API_BASE_URL"] ?? "https://arclive-production.up.railway.app"
         return URL(string: raw)!
@@ -41,23 +39,24 @@ final class APIClient {
         return d
     }()
 
-    // MARK: - Helpers
+    // MARK: - Request bodies
 
-    private struct DeviceBody: Encodable {
-        // swiftlint:disable:next identifier_name
+    private struct CheckInBody: Encodable {
+        let device_id: UUID
+        let exercise_type: String
+    }
+
+    private struct CheckOutBody: Encodable {
         let device_id: UUID
     }
 
-    private func devicePayload(for id: UUID) throws -> Data {
-        try JSONEncoder().encode(DeviceBody(device_id: id))
-    }
+    // MARK: - Helpers
 
-    private func post(path: String, body: Data) async throws -> (Data, HTTPURLResponse) {
+    private func post(path: String, body: some Encodable) async throws -> (Data, HTTPURLResponse) {
         var request = URLRequest(url: baseURL.appendingPathComponent(path))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = body
-
+        request.httpBody = try JSONEncoder().encode(body)
         let (data, response) = try await session.data(for: request)
         return (data, response as! HTTPURLResponse)
     }
@@ -70,8 +69,8 @@ final class APIClient {
 
     // MARK: - Endpoints
 
-    func checkIn(deviceId: UUID) async throws -> Visit {
-        let body = try devicePayload(for: deviceId)
+    func checkIn(deviceId: UUID, exercise: ExerciseType) async throws -> Visit {
+        let body = CheckInBody(device_id: deviceId, exercise_type: exercise.rawValue)
         let (data, response) = try await post(path: "checkin", body: body)
         if response.statusCode == 409 { throw APIError.alreadyCheckedIn }
         if response.statusCode >= 400 { throw APIError.serverError(response.statusCode) }
@@ -80,7 +79,7 @@ final class APIClient {
     }
 
     func checkOut(deviceId: UUID) async throws -> Visit {
-        let body = try devicePayload(for: deviceId)
+        let body = CheckOutBody(device_id: deviceId)
         let (data, response) = try await post(path: "checkout", body: body)
         if response.statusCode == 404 { throw APIError.notCheckedIn }
         if response.statusCode >= 400 { throw APIError.serverError(response.statusCode) }

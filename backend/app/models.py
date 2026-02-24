@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import UUID, TIMESTAMP, text
+from sqlalchemy import UUID, TIMESTAMP, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -18,3 +18,4 @@ class Visit(Base):
     check_out_time: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), nullable=True
     )
+    exercise_type: Mapped[str | None] = mapped_column(Text, nullable=True)

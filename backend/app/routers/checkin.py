@@ -20,6 +20,7 @@ async def check_in(request: Request, body: CheckInRequest, db: AsyncSession = De
         id=uuid.uuid4(),
         device_id=body.device_id,
         check_in_time=datetime.now(timezone.utc),
+        exercise_type=body.exercise_type,
     )
     db.add(visit)
     try:

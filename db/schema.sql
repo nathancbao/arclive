@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS visits (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     device_id       UUID        NOT NULL,
     check_in_time   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    check_out_time  TIMESTAMPTZ          -- NULL = currently checked in
+    check_out_time  TIMESTAMPTZ,         -- NULL = currently checked in
+    exercise_type   TEXT        CHECK (exercise_type IN ('chest', 'back', 'legs', 'arms', 'cardio'))
 );
 
 -- ─────────────────────────────────────────────

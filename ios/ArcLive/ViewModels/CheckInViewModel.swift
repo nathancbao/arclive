@@ -5,13 +5,19 @@ final class CheckInViewModel: ObservableObject {
     @Published var isCheckedIn: Bool = false
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var showExercisePicker: Bool = false
 
     private let deviceId = DeviceIdentifier.id
     private let api = APIClient.shared
 
-    func checkIn() async {
+    func requestCheckIn() {
+        showExercisePicker = true
+    }
+
+    func checkIn(exercise: ExerciseType) async {
+        showExercisePicker = false
         await perform { [self] in
-            _ = try await api.checkIn(deviceId: deviceId)
+            _ = try await api.checkIn(deviceId: deviceId, exercise: exercise)
             isCheckedIn = true
         }
     }
@@ -22,8 +28,6 @@ final class CheckInViewModel: ObservableObject {
             isCheckedIn = false
         }
     }
-
-    // MARK: - Private
 
     private func perform(_ action: () async throws -> Void) async {
         isLoading = true
