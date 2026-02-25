@@ -1,47 +1,58 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var checkInVM = CheckInViewModel()
+    @StateObject private var checkInVM  = CheckInViewModel()
     @StateObject private var occupancyVM = OccupancyViewModel()
 
     var body: some View {
-        ZStack {
-            Color(uiColor: .systemBackground).ignoresSafeArea()
+        GeometryReader { geo in
+            ScrollView {
+                ZStack {
+                    Color(uiColor: .systemBackground)
 
-            VStack(spacing: 0) {
-                // Nav title
-                Text("ArcLive")
-                    .font(.title2.weight(.bold))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 28)
-                    .padding(.top, 20)
-
-                Spacer()
-
-                // Ring
-                ExerciseRingView(segments: occupancyVM.segments, totalCount: occupancyVM.count)
-
-                Spacer()
-
-                // Legend
-                legend
-
-                Spacer()
-
-                // Error
-                if let error = checkInVM.errorMessage {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .multilineTextAlignment(.center)
+                    VStack(spacing: 0) {
+                        // Nav bar row
+                        HStack(alignment: .center) {
+                            Text("ArcLive")
+                                .font(.title2.weight(.bold))
+                            Spacer()
+                            BusynessBadge(level: BusynessLevel(count: occupancyVM.count))
+                        }
                         .padding(.horizontal, 28)
-                        .padding(.bottom, 8)
-                }
+                        .padding(.top, 20)
 
-                // Check In / Out button
-                checkInButton
-                    .padding(.horizontal, 28)
-                    .padding(.bottom, 44)
+                        Spacer()
+
+                        // Ring
+                        ExerciseRingView(segments: occupancyVM.segments, totalCount: occupancyVM.count)
+
+                        Spacer()
+
+                        // Legend
+                        legend
+
+                        Spacer()
+
+                        // Error
+                        if let error = checkInVM.errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 28)
+                                .padding(.bottom, 8)
+                        }
+
+                        // Check In / Out button
+                        checkInButton
+                            .padding(.horizontal, 28)
+                            .padding(.bottom, 44)
+                    }
+                    .frame(width: geo.size.width, height: geo.size.height)
+                }
+            }
+            .refreshable {
+                await occupancyVM.refresh()
             }
         }
         .sheet(isPresented: $checkInVM.showExercisePicker) {
@@ -52,9 +63,9 @@ struct ContentView: View {
                 }
             }
         }
+        .sensoryFeedback(.success, trigger: checkInVM.isCheckedIn)
         .task {
             await occupancyVM.refresh()
-            // Auto-refresh every 30 s
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30))
                 await occupancyVM.refresh()
@@ -114,5 +125,24 @@ struct ContentView: View {
         }
         .disabled(checkInVM.isLoading)
         .animation(.spring(response: 0.3), value: checkInVM.isCheckedIn)
+    }
+}
+
+// MARK: - Busyness Badge
+
+private struct BusynessBadge: View {
+    let level: BusynessLevel
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: level.systemImage)
+                .font(.caption.weight(.semibold))
+            Text(level.label)
+                .font(.caption.weight(.semibold))
+        }
+        .foregroundStyle(level.color)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(level.color.opacity(0.12), in: Capsule())
     }
 }

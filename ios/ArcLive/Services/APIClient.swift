@@ -61,10 +61,17 @@ final class APIClient {
         return (data, response as! HTTPURLResponse)
     }
 
-    private func get(path: String) async throws -> (Data, HTTPURLResponse) {
-        let request = URLRequest(url: baseURL.appendingPathComponent(path))
+    private func get(path: String, queryItems: [URLQueryItem] = []) async throws -> (Data, HTTPURLResponse) {
+        var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false)!
+        if !queryItems.isEmpty { components.queryItems = queryItems }
+        let request = URLRequest(url: components.url!)
         let (data, response) = try await session.data(for: request)
         return (data, response as! HTTPURLResponse)
+    }
+
+    private func decoded<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        do { return try decoder.decode(type, from: data) }
+        catch { throw APIError.decodingError(error) }
     }
 
     // MARK: - Endpoints
@@ -74,8 +81,7 @@ final class APIClient {
         let (data, response) = try await post(path: "checkin", body: body)
         if response.statusCode == 409 { throw APIError.alreadyCheckedIn }
         if response.statusCode >= 400 { throw APIError.serverError(response.statusCode) }
-        do { return try decoder.decode(Visit.self, from: data) }
-        catch { throw APIError.decodingError(error) }
+        return try decoded(Visit.self, from: data)
     }
 
     func checkOut(deviceId: UUID) async throws -> Visit {
@@ -83,14 +89,27 @@ final class APIClient {
         let (data, response) = try await post(path: "checkout", body: body)
         if response.statusCode == 404 { throw APIError.notCheckedIn }
         if response.statusCode >= 400 { throw APIError.serverError(response.statusCode) }
-        do { return try decoder.decode(Visit.self, from: data) }
-        catch { throw APIError.decodingError(error) }
+        return try decoded(Visit.self, from: data)
     }
 
     func getOccupancy() async throws -> OccupancyResponse {
         let (data, response) = try await get(path: "occupancy")
         if response.statusCode >= 400 { throw APIError.serverError(response.statusCode) }
-        do { return try decoder.decode(OccupancyResponse.self, from: data) }
-        catch { throw APIError.decodingError(error) }
+        return try decoded(OccupancyResponse.self, from: data)
+    }
+
+    func getGymStats() async throws -> GymStats {
+        let (data, response) = try await get(path: "stats/gym")
+        if response.statusCode >= 400 { throw APIError.serverError(response.statusCode) }
+        return try decoded(GymStats.self, from: data)
+    }
+
+    func getPersonalStats(deviceId: UUID) async throws -> PersonalStats {
+        let (data, response) = try await get(
+            path: "stats/me",
+            queryItems: [URLQueryItem(name: "device_id", value: deviceId.uuidString.lowercased())]
+        )
+        if response.statusCode >= 400 { throw APIError.serverError(response.statusCode) }
+        return try decoded(PersonalStats.self, from: data)
     }
 }
