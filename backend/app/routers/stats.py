@@ -21,14 +21,8 @@ class HourlyCount(BaseModel):
     count: float  # daily average over the past 30 days
 
 
-class DailyCount(BaseModel):
-    date: str   # ISO date string YYYY-MM-DD
-    count: int
-
-
 class GymStatsResponse(BaseModel):
     peak_hours: list[HourlyCount]
-    daily_headcount: list[DailyCount]
     exercise_breakdown: ExerciseBreakdown
 
 
@@ -73,7 +67,6 @@ def _calculate_streak(dates: list[date]) -> int:
 async def gym_stats(request: Request, db: AsyncSession = Depends(get_db)):
     now = datetime.now(timezone.utc)
     thirty_days_ago = now - timedelta(days=30)
-    seven_days_ago  = now - timedelta(days=7)
 
     # Peak hours — total check-ins per hour over past 30 days, averaged per day
     hour_result = await db.execute(
@@ -89,21 +82,6 @@ async def gym_stats(request: Request, db: AsyncSession = Depends(get_db)):
     peak_hours = [
         HourlyCount(hour=int(r.hour), count=round(r.count / 30, 1))
         for r in hour_rows
-    ]
-
-    # Daily headcount — unique devices per day for past 7 days
-    daily_result = await db.execute(
-        select(
-            func.date(Visit.check_in_time).label("date"),
-            func.count(Visit.device_id.distinct()).label("count"),
-        )
-        .where(Visit.check_in_time > seven_days_ago)
-        .group_by(func.date(Visit.check_in_time))
-        .order_by(func.date(Visit.check_in_time))
-    )
-    daily_headcount = [
-        DailyCount(date=str(r.date), count=r.count)
-        for r in daily_result.all()
     ]
 
     # Exercise breakdown — past 30 days
@@ -126,7 +104,6 @@ async def gym_stats(request: Request, db: AsyncSession = Depends(get_db)):
 
     return GymStatsResponse(
         peak_hours=peak_hours,
-        daily_headcount=daily_headcount,
         exercise_breakdown=breakdown,
     )
 

@@ -19,7 +19,6 @@ struct StatsView: View {
 
                         if let gym = vm.gymStats {
                             peakHoursSection(gym)
-                            dailyHeadcountSection(gym)
                             exerciseBreakdownSection(gym)
                         }
 
@@ -155,28 +154,6 @@ struct StatsView: View {
         case 12: return "12pm"
         default: return h < 12 ? "\(h)am" : "\(h - 12)pm"
         }
-    }
-
-    // MARK: - Daily Headcount
-
-    private func dailyHeadcountSection(_ stats: GymStats) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("Daily Headcount")
-            Text("Unique visitors per day · last 7 days")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Chart(stats.dailyHeadcount, id: \.date) { item in
-                BarMark(
-                    x: .value("Day", item.dayLabel),
-                    y: .value("Count", item.count)
-                )
-                .foregroundStyle(Color.indigo.gradient)
-                .cornerRadius(3)
-            }
-            .frame(height: 140)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Exercise Breakdown
