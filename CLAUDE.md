@@ -49,3 +49,16 @@ Before opening a PR, run `ruff check .` and `pytest` in `backend/`. CI runs both
 - **Issues** use the forms in `.github/ISSUE_TEMPLATE`. Work is tracked on the GitHub Project board: Backlog, Ready, In Progress, In Review, Done.
 - **Add no attribution lines** such as `Co-Authored-By: Claude`.
 - Claude may push branches, open PRs and comment on issues. It never merges, and approves a PR only when the developer says to.
+
+## Discord pings
+
+Nathan and Kiran each have a Discord channel. When one of them asks Claude to tell the other something, such as "ping Kiran to review this", Claude posts to the other person's channel, mentioning them.
+
+```sh
+python3 scripts/notify_discord.py <nathan|kiran> "<message with {nathan} and {kiran} placeholders>"
+```
+
+- The first argument is whose channel to post in. `{kiran}` and `{nathan}` become real Discord mentions.
+- The webhook URLs and Discord user IDs are in the git-ignored `.env` (`DISCORD_WEBHOOK_*`, `DISCORD_ID_*`). **Never commit them or print them.** The repo is public, and anyone with a webhook URL can post to that channel.
+- Post only when the developer asks. Write the message so it can be read cold: what changed, why, what the other person has to do, and a link to the PR or issue.
+- If `.env` is missing, each person adds their own copy with the four variables.
