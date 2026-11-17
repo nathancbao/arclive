@@ -10,6 +10,7 @@ Two people work on it. Everything goes through pull requests.
 - `db/`: `schema.sql` is the source of truth for the database. Any schema change also adds a migration file here, named in order like `migration_<what>.sql`.
 - `ios/`: SwiftUI in MVVM. `project.yml` defines the Xcode project with XcodeGen. The `.xcodeproj` and `Info.plist` are generated and git-ignored, so never commit them.
 - `.github/`: CI, issue and PR templates, CODEOWNERS, Dependabot.
+- `.claude/skills/`: shared skills. `pr-review` reviews a PR with three parallel reviewers and records what it learns.
 
 ## Commands
 
@@ -35,6 +36,12 @@ Before opening a PR, run `ruff check .` and `pytest` in `backend/`. CI runs both
 - **Never commit secrets.** `DATABASE_URL` lives in `backend/.env`, which is git-ignored. Only `.env.example` is committed, with placeholder values.
 - **Tests:** add a test in `backend/tests/` for any backend change. Tests there must not need a real database.
 - **Python style:** type hints on function signatures, and `ruff check .` clean.
+
+## Lessons
+
+This section is how the project gets better at working with Claude. When the developer corrects Claude, or a review or a CI failure shows a mistake that could happen again, Claude proposes a one-line rule here in the same PR as the fix, saying why. Keep each rule to one line and delete it when it stops being true. Details for reviews go in `.claude/skills/pr-review/review-preferences.md`, and long procedures become a skill.
+
+- None yet.
 
 ## Git and GitHub
 
