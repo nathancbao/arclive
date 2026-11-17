@@ -31,5 +31,5 @@ async def check_in(request: Request, body: CheckInRequest, db: AsyncSession = De
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Device is already checked in.",
-        )
+        ) from None
     return visit

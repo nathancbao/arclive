@@ -1,0 +1,9 @@
+# Each path's owners are requested for review automatically on PRs that touch it.
+# With "Require review from Code Owners" on, an owner other than the author must approve.
+# Split these by who owns what once you've decided, e.g. backend/ to one of you and ios/ to the other.
+
+*                 @nathancbao @KiranJoji
+/.github/         @nathancbao @KiranJoji
+/db/              @nathancbao @KiranJoji
+/backend/         @nathancbao @KiranJoji
+/ios/             @nathancbao @KiranJoji
