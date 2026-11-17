@@ -1,5 +1,5 @@
-# Claude Code local settings (machine-specific)
-.claude/
+# Claude Code local settings (machine-specific). Skills and hooks in .claude/ are committed.
+.claude/settings.local.json
 
 # Environment / secrets
 .env
