@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "UP"]
+ignore = [
+    "B008",   # FastAPI uses Depends(...) and Query(...) as argument defaults
+    "UP017",  # datetime.timezone.utc is fine; revisit when the minimum Python is 3.11+ everywhere
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
